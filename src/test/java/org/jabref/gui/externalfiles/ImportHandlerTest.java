@@ -1,13 +1,20 @@
 package org.jabref.gui.externalfiles;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.undo.UndoManager;
 
 import javafx.collections.FXCollections;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 
 import org.jabref.gui.DialogService;
 import org.jabref.gui.StateManager;
+import org.jabref.gui.maintable.MainTable;
 import org.jabref.gui.duplicationFinder.DuplicateResolverDialog;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.FilePreferences;
@@ -78,6 +85,8 @@ class ImportHandlerTest {
         testEntry = new BibEntry(StandardEntryType.Article)
                 .withCitationKey("Test2023")
                 .withField(StandardField.AUTHOR, "Test Author");
+
+       
     }
 
     @Test
@@ -218,5 +227,60 @@ class ImportHandlerTest {
         // Assert
         assertFalse(bibDatabase.getEntries().contains(duplicateEntry)); // Assert that the duplicate entry was removed from the database
         assertEquals(mergedEntry, result); // Assert that the merged entry is returned
+    }
+
+   
+    @Test
+        void testCitationKeyGeneratedBeforeDragDrop() {
+
+         // Instantiate MainTable with mocked dependencies
+        /*
+        RESEARCH: MainTable requires a parameter LibraryTab,
+        which has a private constructor, and in which it has a method called createMainTable
+        that creates a MainTable. And to create a LibraryTab, one has to call the createLibraryTab() method in LibraryTab class
+        which is called in the JabRefFrame class
+        Conclusion: if we want to test for the drag and drop through firing the event, we have to instantiate the whole UI.
+
+        FURTHER RESEARCH: TestFX is a useful tool for simulating user interaction. Could be used for MainTable and the 
+        "testCitationKeyGeneratedBeforeDragDrop" further below
+
+        !! THE mainTable INSTANTIATION BELOW IS NOT CORRECT!!
+         */
+        MainTable mainTable = new MainTable(
+                null, // model
+                new LibraryTab(), //library tab
+                //library tab container
+                bibDatabaseContext, //database
+                preferences, //GUI preferences
+                mock(DialogService.class),
+                mock(StateManager.class),
+                mock(KeyBindingRepository.class),
+                mock(ClipBoardManager.class),
+                importHandler)
+        
+        // Create a mock DragEvent and Dragboard and set it up
+        DragEvent dragEvent = mock(DragEvent.class);
+        Dragboard dragboard = mock(Dragboard.class);
+        when(dragboard.hasFiles()).thenReturn(true);
+
+        // Simulated the dropped PDF file
+        Path pdfFile = Paths.get("resources/pdfs/PdfContentImporter/Bogner2023.pdf"); // matching with the issue
+        when(dragboard.getFiles()).thenReturn(Collections.singletonList(pdfFile.toFile()));
+        when(dragEvent.getDragboard()).thenReturn(dragboard);
+
+        // Fire the event on the MainTable
+        mainTable.fireEvent(dragEvent);
+        /* this is expected to call the line
+        this.setOnDragDropped(this::handleOnDragDroppedTableView);`in MainTable.java
+         */
+
+        // Verify that importFilesInBackground was called
+        verify(importHandler).importFilesInBackground(
+                Collections.singletonList(pdfFile),
+                bibDatabaseContext,
+                preferences.getFilePreferences(), // Use null or a mocked FilePreferences
+                TransferMode.COPY
+        );
+
     }
 }
