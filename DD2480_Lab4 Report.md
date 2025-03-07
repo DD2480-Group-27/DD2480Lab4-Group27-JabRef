@@ -211,6 +211,9 @@ index 5555ef0..5883e16 100644
 
 ```
 
+Link to git commit with code change:
+https://github.com/DD2480-Group-27/DD2480Lab4-Group27-JabRef/commit/69abc12e31d9c042fca8a9de618914557b238acd
+
 ## Test results
 
 Overall results with link to a copy or excerpt of the logs (before/after
