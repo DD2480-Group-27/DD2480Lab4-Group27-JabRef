@@ -186,6 +186,10 @@ It is a bug in the naming of the file. Basically now when the user drag and drop
 Scope :
 This bug implies searching for the failure point in the code involving the interations. This project uses JavaFX as graphic library and library for the interactions coming from the users. The interaction will then trigger a stack of method calls with effect the file copy with a name following the defined convention in the software (which was not respected before the fix). The code in question is mostly located in the gui package but also part of the model and the logic packages.
 
+A UML diagram for the concerned code location is shown below:
+
+![UML Diagram](./ImportHandler__importFilesInBackground.drawio.svg)
+
 ## Functionnality requirement:
 
 Having the imported pdf file on drag and drop from file explorer named in compliance with the regex defined in JabRef (by default “””[bibtexKey] - [title]”””)
